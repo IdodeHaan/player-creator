@@ -1,6 +1,9 @@
 package com.haanido.playercreator;
 
+import com.haanido.playercreator.entity.PhoneNumber;
+import com.haanido.playercreator.entity.PhoneNumberType;
 import com.haanido.playercreator.entity.Player;
+import com.haanido.playercreator.repo.PhoneNumberRepository;
 import com.haanido.playercreator.repo.PlayerRepository;
 import com.haanido.playercreator.service.PlayerService;
 import org.junit.jupiter.api.Test;
@@ -20,6 +23,8 @@ class PlayerCreatorApplicationTests {
 
 	@Autowired
 	PlayerRepository repository;
+	@Autowired
+	PhoneNumberRepository phoneNumberRepository;
 
 	@Test
 	void contextLoads() {
@@ -61,6 +66,20 @@ class PlayerCreatorApplicationTests {
 //			System.out.println("er is helaas geen player");
 //		}
 		playerList.forEach(player1 -> System.out.println(player1.getId()));
+	}
+
+	@Test
+	public void addPhoneNumberToPlayer() {
+		PhoneNumber phoneNumber = new PhoneNumber();
+		phoneNumber.setNumber("0611223344");
+		phoneNumber.setType(PhoneNumberType.WORK);
+		phoneNumberRepository.save(phoneNumber);
+		System.out.println(phoneNumber);
+	}
+
+	@Test
+	public void getPhoneNumber() {
+		System.out.println(phoneNumberRepository.findById(8));
 	}
 
 }

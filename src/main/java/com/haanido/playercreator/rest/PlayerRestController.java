@@ -1,6 +1,7 @@
 package com.haanido.playercreator.rest;
 
 import com.haanido.playercreator.entity.Address;
+import com.haanido.playercreator.entity.PhoneNumber;
 import com.haanido.playercreator.entity.Player;
 import com.haanido.playercreator.service.AddressService;
 import com.haanido.playercreator.service.PlayerService;
@@ -106,5 +107,12 @@ public class PlayerRestController {
         player.setAddress(null);
         addressService.deleteAddress(address.getId());
         return player;
+    }
+
+    @PutMapping("/players/{player_id}/phonenumber")
+    public Player addPhoneNumberToPlayer(@PathVariable int player_id, @RequestBody PhoneNumber phoneNumber) {
+        Player player = getPlayerById(player_id);
+        player.addPhoneNumber(phoneNumber);
+        return playerService.updatePlayer(player);
     }
 }
