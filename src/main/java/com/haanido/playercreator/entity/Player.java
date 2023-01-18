@@ -3,9 +3,6 @@ package com.haanido.playercreator.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Table
 @Data
@@ -22,4 +19,7 @@ public class Player {
     private String email;
     private int age;
     private double ranking;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id")
+    private Address address;
 }

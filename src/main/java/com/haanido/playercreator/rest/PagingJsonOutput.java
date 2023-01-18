@@ -1,5 +1,6 @@
-package com.haanido.playercreator.entity;
+package com.haanido.playercreator.rest;
 
+import com.haanido.playercreator.entity.Player;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 

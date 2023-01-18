@@ -1,7 +1,8 @@
 package com.haanido.playercreator.rest;
 
-import com.haanido.playercreator.entity.PagingJsonOutput;
+import com.haanido.playercreator.entity.Address;
 import com.haanido.playercreator.entity.Player;
+import com.haanido.playercreator.service.AddressService;
 import com.haanido.playercreator.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ import java.util.Optional;
 public class PlayerRestController {
 
     private final PlayerService playerService;
+    private final AddressService addressService;
 
     @GetMapping("/players/{playerId}")
     public Player getPlayerById(@PathVariable int playerId) {
@@ -88,5 +90,21 @@ public class PlayerRestController {
     public Player updatePlayer(@RequestBody Player player) {
         getPlayerById(player.getId());
         return playerService.updatePlayer(player);
+    }
+
+    @PutMapping("/players/{player_id}/address")
+    public Player addAddressToPlayer(@PathVariable int player_id, @RequestBody Address address) {
+        Player player = getPlayerById(player_id);
+        player.setAddress(address);
+        return playerService.updatePlayer(player);
+    }
+
+    @DeleteMapping("/players/{player_id}/address")
+    public Player deleteAddressForPlayer(@PathVariable int player_id) {
+        Player player = getPlayerById(player_id);
+        Address address = player.getAddress();
+        player.setAddress(null);
+        addressService.deleteAddress(address.getId());
+        return player;
     }
 }
