@@ -4,12 +4,14 @@ import com.haanido.playercreator.entity.Address;
 import com.haanido.playercreator.entity.PhoneNumber;
 import com.haanido.playercreator.entity.Player;
 import com.haanido.playercreator.service.AddressService;
+import com.haanido.playercreator.service.PhoneNumberService;
 import com.haanido.playercreator.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -21,6 +23,7 @@ public class PlayerRestController {
 
     private final PlayerService playerService;
     private final AddressService addressService;
+    private final PhoneNumberService phoneNumberService;
 
     @GetMapping("/players/{playerId}")
     public Player getPlayerById(@PathVariable int playerId) {
@@ -32,7 +35,7 @@ public class PlayerRestController {
     }
 
     @GetMapping("/players")
-    public PagingJsonOutput getPlayers(
+    public ResponseEntity<PagingJsonOutput> getPlayers(
             @RequestParam(value = "email", required = false) String email,
             @RequestParam(value = "last_name", required = false) String lastName,
             @RequestParam(value = "age", required = false) String ageBetween,
@@ -62,8 +65,8 @@ public class PlayerRestController {
                 players = playerService.getAllPlayers(pageable);
             }
         }
-        return new PagingJsonOutput(players.getContent(), pageable.getPageNumber()+1,
-                pageable.getPageSize(), players.getTotalElements());
+        return ResponseEntity.ok(new PagingJsonOutput(players.getContent(), pageable.getPageNumber()+1,
+                pageable.getPageSize(), players.getTotalElements()));
     }
 
     private Sort createSort(String sortBy, String order) {
@@ -109,10 +112,16 @@ public class PlayerRestController {
         return player;
     }
 
-    @PutMapping("/players/{player_id}/phonenumber")
+    @PutMapping("/players/{player_id}/phonenumbers")
     public Player addPhoneNumberToPlayer(@PathVariable int player_id, @RequestBody PhoneNumber phoneNumber) {
         Player player = getPlayerById(player_id);
         player.addPhoneNumber(phoneNumber);
         return playerService.updatePlayer(player);
+    }
+
+    @DeleteMapping("/players/{player_id}/phonenumbers/{phonenumber_id}")
+    public Player deletePhoneNumberForPlayer(@PathVariable int player_id, @PathVariable int phonenumber_id) {
+        phoneNumberService.deletePhoneNumber(phonenumber_id);
+        return getPlayerById(player_id);
     }
 }
