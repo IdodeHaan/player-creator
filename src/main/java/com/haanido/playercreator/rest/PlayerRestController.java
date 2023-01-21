@@ -65,12 +65,8 @@ public class PlayerRestController {
                 players = playerService.getAllPlayers(pageable);
             }
         }
-        return ResponseEntity.ok(PagingJsonOutput.builder()
-                .content(players.getContent())
-                .page(pageable.getPageNumber())
-                .results_per_page(pageable.getPageSize())
-                .total_results(players.getTotalElements())
-                .build());
+        return ResponseEntity.ok(new PagingJsonOutput(players.getContent(), pageable.getPageNumber()+1,
+                pageable.getPageSize(), players.getTotalElements()));
     }
 
     private Sort createSort(String sortBy, String order) {
