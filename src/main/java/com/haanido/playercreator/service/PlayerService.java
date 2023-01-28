@@ -2,9 +2,12 @@ package com.haanido.playercreator.service;
 
 import com.haanido.playercreator.entity.Player;
 import com.haanido.playercreator.repo.PlayerRepository;
+import com.haanido.playercreator.rest.PlayerFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -17,23 +20,42 @@ public class PlayerService {
     public Optional<Player> getPlayer(int id) {
         return playerRepository.findById(id);
     }
-    public Page<Player> getAllPlayers(Pageable pageable) {
-        return playerRepository.findAll(pageable);
-    }
-    public Page<Player> getPlayersByLastName(String name, Pageable pageable) {
-        return playerRepository.findPlayerByLastNameContaining(name, pageable);
+
+    public Page<Player> getPlayers(PlayerFilter playerFilter) {
+
+        Sort sort = createSort(playerFilter.getSortBy(), playerFilter.getOrder());
+        Pageable pageable = PageRequest.of(playerFilter.getPage()-1,
+                playerFilter.getResultsPerPage(), sort);
+        Page<Player> players;
+
+        if (playerFilter.getAgeLowerThan() > 0 && playerFilter.getAgeGreaterThan() > 0) {
+            players = playerRepository.findPlayerByAgeBetween(playerFilter.getAgeGreaterThan(),
+                    playerFilter.getAgeLowerThan(), pageable);
+        } else {
+            String email = playerFilter.getEmail();
+            String lastName = playerFilter.getLastName();
+            if (email != null && lastName != null) {
+                players = playerRepository.findPlayerByLastNameContainsAndEmailContains(lastName, email, pageable);
+            } else if (email != null) {
+                players = playerRepository.findPlayerByEmailContaining(email, pageable);
+            } else if (lastName != null) {
+                players = playerRepository.findPlayerByLastNameContaining(lastName, pageable);
+            } else {
+                players = playerRepository.findAll(pageable);
+            }
+        }
+        return players;
     }
 
-    public Page<Player> getPlayersByEmail(String name, Pageable pageable) {
-        return playerRepository.findPlayerByEmailContaining(name, pageable);
-    }
-    public Page<Player> getPlayersByLastNameAndEmail(String lastName, String email, Pageable pageable) {
-        return playerRepository.findPlayerByLastNameContainsAndEmailContains(lastName, email, pageable);
+    private Sort createSort(String sortBy, String order) {
+        Sort.Direction direction;
+        if (order.equals("asc"))
+            direction = Sort.Direction.ASC;
+        else
+            direction = Sort.Direction.DESC;
+        return Sort.by(direction, sortBy);
     }
 
-    public Page<Player> getPlayersByAgeRange(Integer age1, Integer age2,Pageable pageable) {
-        return playerRepository.findPlayerByAgeBetween(age1, age2, pageable);
-    }
     public Player createPlayer(Player player) {
         player.setId(0);
         if (player.getAddress() != null) {

@@ -8,9 +8,6 @@ import com.haanido.playercreator.service.PhoneNumberService;
 import com.haanido.playercreator.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,49 +29,12 @@ public class PlayerController implements PlayerOperations {
         return player.get();
     }
 
-    public ResponseEntity<PlayerPagingOutput> getPlayers(
-            String email,
-            String lastName,
-            String ageBetween,
-            String sortBy,
-            String order,
-            int page,
-            int resultsPerPage
-        )
+    public ResponseEntity<PagingOutputObject> getPlayers(PlayerFilter playerFilter)
     {
-        Sort sort = createSort(sortBy, order);
-        Pageable pageable = PageRequest.of(page-1, resultsPerPage, sort);
-        Page<Player> players;
-
-        if (ageBetween != null) {
-            String[] tempAge = ageBetween.split(":");
-            int age1 = Integer.parseInt(tempAge[0]);
-            int age2 = Integer.parseInt(tempAge[1]);
-            players = playerService.getPlayersByAgeRange(age1, age2, pageable);
-        } else {
-            if (email != null && lastName != null) {
-                players = playerService.getPlayersByLastNameAndEmail(lastName, email, pageable);
-            } else if (email != null) {
-                players = playerService.getPlayersByEmail(email, pageable);
-            } else if (lastName != null) {
-                players = playerService.getPlayersByLastName(lastName, pageable);
-            } else {
-                players = playerService.getAllPlayers(pageable);
-            }
-        }
-        return ResponseEntity.ok(new PlayerPagingOutput(players.getContent(), pageable.getPageNumber()+1,
-                pageable.getPageSize(), players.getTotalElements()));
+        Page<Player> players = playerService.getPlayers(playerFilter);
+        return ResponseEntity.ok(new PagingOutputObject(players.getContent(), playerFilter.getPage(),
+                playerFilter.getResultsPerPage(), players.getTotalElements()));
     }
-
-    private Sort createSort(String sortBy, String order) {
-        Sort.Direction direction;
-        if (order.equals("asc"))
-            direction = Sort.Direction.ASC;
-        else
-            direction = Sort.Direction.DESC;
-        return Sort.by(direction, sortBy);
-    }
-
     public Player addPlayer(Player player) {
         return playerService.createPlayer(player);
     }

@@ -13,15 +13,7 @@ public interface PlayerOperations {
     public Player getPlayer(@PathVariable int playerId);
 
     @GetMapping("/players")
-    public ResponseEntity<PlayerPagingOutput> getPlayers(
-            @RequestParam(value = "email", required = false) String email,
-            @RequestParam(value = "last_name", required = false) String lastName,
-            @RequestParam(value = "age", required = false) String ageBetween,
-            @RequestParam(value = "sort_by") String sortBy,
-            @RequestParam(value = "order") String order,
-            @RequestParam(value = "page") int page,
-            @RequestParam(value = "results_per_page") int resultsPerPage
-        );
+    public ResponseEntity<PagingOutputObject> getPlayers(@RequestBody PlayerFilter playerFilter);
 
     @PostMapping("/players")
     public Player addPlayer(@RequestBody Player player);
