@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class PagingJsonOutput {
+public class PlayerPagingOutput {
     private final List<Player> content;
     private final int page;
     private final long results_per_page;

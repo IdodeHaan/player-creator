@@ -17,16 +17,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api")
 @RequiredArgsConstructor
-public class PlayerRestController {
+public class PlayerController implements PlayerOperations {
 
     private final PlayerService playerService;
     private final AddressService addressService;
     private final PhoneNumberService phoneNumberService;
 
-    @GetMapping("/players/{playerId}")
-    public Player getPlayerById(@PathVariable int playerId) {
+    public Player getPlayer(int playerId) {
         Optional<Player> player = playerService.getPlayer(playerId);
         if (player.isEmpty()) {
             throw new PlayerNotFoundException("Player id not found - " + playerId);
@@ -34,15 +32,14 @@ public class PlayerRestController {
         return player.get();
     }
 
-    @GetMapping("/players")
-    public ResponseEntity<PagingJsonOutput> getPlayers(
-            @RequestParam(value = "email", required = false) String email,
-            @RequestParam(value = "last_name", required = false) String lastName,
-            @RequestParam(value = "age", required = false) String ageBetween,
-            @RequestParam(value = "sort_by") String sortBy,
-            @RequestParam(value = "order") String order,
-            @RequestParam(value = "page") int page,
-            @RequestParam(value = "results_per_page") int resultsPerPage
+    public ResponseEntity<PlayerPagingOutput> getPlayers(
+            String email,
+            String lastName,
+            String ageBetween,
+            String sortBy,
+            String order,
+            int page,
+            int resultsPerPage
         )
     {
         Sort sort = createSort(sortBy, order);
@@ -65,7 +62,7 @@ public class PlayerRestController {
                 players = playerService.getAllPlayers(pageable);
             }
         }
-        return ResponseEntity.ok(new PagingJsonOutput(players.getContent(), pageable.getPageNumber()+1,
+        return ResponseEntity.ok(new PlayerPagingOutput(players.getContent(), pageable.getPageNumber()+1,
                 pageable.getPageSize(), players.getTotalElements()));
     }
 
@@ -78,50 +75,43 @@ public class PlayerRestController {
         return Sort.by(direction, sortBy);
     }
 
-    @PostMapping("/players")
-    public Player createPlayer(@RequestBody Player player) {
+    public Player addPlayer(Player player) {
         return playerService.createPlayer(player);
     }
 
-    @DeleteMapping("/players/{id}")
-    public String deletePlayerById(@PathVariable int id) {
-        getPlayerById(id);
+    public String deletePlayer(int id) {
+        getPlayer(id);
         playerService.deletePlayer(id);
         return "Deleted player with id " + id;
     }
 
-    @PutMapping("/players")
-    public Player updatePlayer(@RequestBody Player player) {
-        getPlayerById(player.getId());
+    public Player updatePlayerDetails(Player player) {
+        getPlayer(player.getId());
         return playerService.updatePlayer(player);
     }
 
-    @PutMapping("/players/{player_id}/address")
-    public Player addAddressToPlayer(@PathVariable int player_id, @RequestBody Address address) {
-        Player player = getPlayerById(player_id);
+    public Player addAddressToPlayer(int player_id, Address address) {
+        Player player = getPlayer(player_id);
         player.setAddress(address);
         return playerService.updatePlayer(player);
     }
 
-    @DeleteMapping("/players/{player_id}/address")
-    public Player deleteAddressForPlayer(@PathVariable int player_id) {
-        Player player = getPlayerById(player_id);
+    public Player deleteAddressForPlayer(int player_id) {
+        Player player = getPlayer(player_id);
         Address address = player.getAddress();
         player.setAddress(null);
         addressService.deleteAddress(address.getId());
         return player;
     }
 
-    @PutMapping("/players/{player_id}/phonenumbers")
-    public Player addPhoneNumberToPlayer(@PathVariable int player_id, @RequestBody PhoneNumber phoneNumber) {
-        Player player = getPlayerById(player_id);
+    public Player addPhoneNumberToPlayer(int player_id, PhoneNumber phoneNumber) {
+        Player player = getPlayer(player_id);
         player.addPhoneNumber(phoneNumber);
         return playerService.updatePlayer(player);
     }
 
-    @DeleteMapping("/players/{player_id}/phonenumbers/{phonenumber_id}")
-    public Player deletePhoneNumberForPlayer(@PathVariable int player_id, @PathVariable int phonenumber_id) {
+    public Player deletePhoneNumberForPlayer(int player_id, int phonenumber_id) {
         phoneNumberService.deletePhoneNumber(phonenumber_id);
-        return getPlayerById(player_id);
+        return getPlayer(player_id);
     }
 }
